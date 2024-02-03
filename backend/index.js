@@ -1,35 +1,42 @@
 // Create server
 const express = require("express");
 const app = express();
-app.use(express.json());
-const cors = require("cors");
+const _PORT = process.env.PORT;
 
 // Enable CORS for all routes
+const cors = require("cors");
 app.use(cors());
 
-// Connect to DB
+// Middleware to Parse JSON
+app.use(express.json());
+
+const userName = process.env.USERNAME;
+const password = process.env.PASSWORD;
+const db = process.env.DB;
+
+// Connect to MongoDB
 const mongoose = require("mongoose");
 mongoose.connect(
-  "mongodb+srv://imad-ed-fl:ufiesPI7sWeQacL9@cluster0.cyjtgvu.mongodb.net/book-store?retryWrites=true&w=majority"
+  `mongodb+srv://${userName}:${password}@cluster0.cyjtgvu.mongodb.net/${db}?retryWrites=true&w=majority`
 );
 
 // Import book model
 const BookModel = require("./models/Books");
 
-// GET
+// GET Endpoint to Retrieve Books
 app.get("/books", async (req, res) => {
   const books = await BookModel.find();
   res.json(books);
 });
 
-// POST
+// POST Endpoint to Create a Book
 app.post("/createBook", async (req, res) => {
   const newBook = new BookModel(req.body);
   await newBook.save();
-
   res.json(newBook);
 });
 
-app.listen("3001", () => {
+// Start the Server
+app.listen(_PORT, () => {
   console.log("testing");
 });
