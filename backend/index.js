@@ -1,7 +1,7 @@
 // Create server
 const express = require("express");
 const app = express();
-const _PORT = process.env.PORT;
+const _PORT = 3001;
 
 // Enable CORS for all routes
 const cors = require("cors");
@@ -10,9 +10,9 @@ app.use(cors());
 // Middleware to Parse JSON
 app.use(express.json());
 
-const userName = process.env.USERNAME;
-const password = process.env.PASSWORD;
-const db = process.env.DB;
+const userName = "imad-ed-fl";
+const password = "ufiesPI7sWeQacL9";
+const db = "book-store";
 
 // Connect to MongoDB
 const mongoose = require("mongoose");
@@ -27,6 +27,7 @@ const BookModel = require("./models/Books");
 app.get("/books", async (req, res) => {
   const books = await BookModel.find();
   res.json(books);
+  console.log("connected");
 });
 
 // POST Endpoint to Create a Book
@@ -34,6 +35,13 @@ app.post("/createBook", async (req, res) => {
   const newBook = new BookModel(req.body);
   await newBook.save();
   res.json(newBook);
+});
+
+// DELETE Endpoint to Delete a Book
+app.delete("/deleteBook/:id", async (req, res) => {
+  const id = req.params.id;
+  await BookModel.findByIdAndDelete(id);
+  res.json("Book Deleted");
 });
 
 // Start the Server

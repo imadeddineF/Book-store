@@ -7,6 +7,7 @@ interface Book {
   name: string;
   author: string;
   rate: number;
+  _id: string;
 }
 
 const Books = () => {
@@ -14,11 +15,12 @@ const Books = () => {
   const [name, setName] = useState("");
   const [author, setAuthor] = useState("");
   const [rate, setRate] = useState(0);
+  const _api = "http://localhost:3001";
 
+  // Get all books
   useEffect(() => {
-    Axios.get("http://localhost:3001/books")
+    Axios.get(`${_api}/books`)
       .then((res) => {
-        console.log(res.data);
         setBooksArr(res.data);
       })
       .catch(() => {
@@ -26,21 +28,29 @@ const Books = () => {
       });
   }, []);
 
+  // Add a book
   const handleAddBook = (event: React.FormEvent) => {
     event.preventDefault();
-    Axios.post("http://localhost:3001/createBook", {
-      name: name,
-      author: author,
-      rate: rate,
-    }).then((res) => {
-      console.log("book created");
-      console.log(res.data);
-      setBooksArr((prevBooks) => [...prevBooks, res.data]);
-    });
-
+    if (name && author && rate) {
+      Axios.post(`${_api}/createBook`, { name, author, rate }).then((res) => {
+        setBooksArr((prevBooks) => [...prevBooks, res.data]);
+      });
+    }
     setName("");
     setAuthor("");
     setRate(0);
+  };
+
+  // Delete a book
+  const handleDeleteBook = (id: string) => {
+    Axios.delete(`${_api}/deleteBook/${id}`).then(() => {
+      setBooksArr((prevBooks) => prevBooks.filter((book) => book._id !== id));
+    });
+  };
+
+  // Update a book
+  const handleUpdateBook = (id: string) => {
+    console.log("Update book with id: ", id);
   };
 
   return (
@@ -85,12 +95,15 @@ const Books = () => {
         <div>
           <h1 className="font-bold text-red-400 mt-[20px]">GET</h1>
           <ul className="grid grid-cols-12 gap-[20px]">
-            {booksArr.map((book, index) => (
-              <li className="col-span-3" key={index}>
+            {booksArr.map(({ name, author, rate, _id }) => (
+              <li className="col-span-3" key={_id}>
                 <BookCard
-                  name={book.name}
-                  author={book.author}
-                  rate={book.rate}
+                  name={name}
+                  author={author}
+                  rate={rate}
+                  _id={_id}
+                  deleteBook={handleDeleteBook}
+                  updateBook={handleUpdateBook}
                 />
               </li>
             ))}
