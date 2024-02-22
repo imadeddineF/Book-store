@@ -1,3 +1,4 @@
+import { useEditBook } from "../store/store";
 import { EditBookPopup } from "./editBookPopup";
 
 interface Book {
@@ -6,17 +7,15 @@ interface Book {
   author: string;
   rate: number;
   deleteBook: (id: string) => void;
-  updateBook: (id: string) => void;
 }
 
-const BookCard = ({
-  _id,
-  name,
-  author,
-  rate,
-  deleteBook,
-  updateBook,
-}: Book) => {
+const BookCard = ({ _id, name, author, rate, deleteBook }: Book) => {
+  const { setEdit } = useEditBook();
+
+  const handleEditBook = () => {
+    setEdit(true, _id, name, author, rate);
+  };
+
   return (
     <div
       id={_id}
@@ -27,17 +26,10 @@ const BookCard = ({
       <p className="text-lg">Rate: {rate}</p>
       <div className="flex gap-[15px]">
         <button
-          onClick={() => updateBook(_id)}
+          onClick={handleEditBook}
           className="bg-green-400 px-[15px] text-white rounded-md py-[3px] mt-[10px]"
         >
           Edit
-          <EditBookPopup
-            _id={_id}
-            name={name}
-            author={author}
-            rate={rate}
-            updateBook={updateBook}
-          />
         </button>
         <button
           onClick={() => deleteBook(_id)}
@@ -46,6 +38,9 @@ const BookCard = ({
           Delete
         </button>
       </div>
+
+      {/* Edit book popup */}
+      <EditBookPopup />
     </div>
   );
 };

@@ -48,11 +48,6 @@ const Books = () => {
     });
   };
 
-  // Update a book
-  const handleUpdateBook = (id: string) => {
-    console.log("Update book with id: ", id);
-  };
-
   return (
     <div className="min-h-screen ">
       <div className="pt-[30px] pb-[50px] px-[40px]">
@@ -103,7 +98,6 @@ const Books = () => {
                   rate={rate}
                   _id={_id}
                   deleteBook={handleDeleteBook}
-                  updateBook={handleUpdateBook}
                 />
               </li>
             ))}

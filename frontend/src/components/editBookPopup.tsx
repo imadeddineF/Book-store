@@ -1,88 +1,113 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useEditBook } from "../store/store";
+import axios from "axios";
 
-interface bookInfo {
-  _id: string;
-  name: string;
-  author: string;
-  rate: number;
-  updateBook: (updatedBook: any) => void;
-}
+export const EditBookPopup = () => {
+  const _api = "http://localhost:3001";
+  const {
+    edit,
+    editedBookId,
+    editedBookName,
+    editedBookAuthor,
+    editedBookRate,
+    setEdit,
+  } = useEditBook();
+  const [name, setName] = useState(editedBookName);
+  const [author, setAuthor] = useState(editedBookAuthor);
+  const [rate, setRate] = useState(editedBookRate);
 
-export const EditBookPopup = ({
-  _id,
-  name,
-  author,
-  rate,
-  updateBook,
-}: bookInfo) => {
-  const [newName, setNewName] = useState(name);
-  const [newAuthor, setNewAuthor] = useState(author);
-  const [newRate, setNewRate] = useState(rate);
-  const { edit, setEdit } = useEditBook();
+  useEffect(() => {
+    setName(editedBookName);
+    setAuthor(editedBookAuthor);
+    setRate(editedBookRate);
+  }, [editedBookName, editedBookAuthor, editedBookRate]);
 
   // Update book
-  const handleUpdateBook = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Axios.put(`${_api}/updateBook/${id}`).then((res) => {
-    //   setBooksArr((prevBooks) =>
-    //     prevBooks.map((book) => {
-    //       if (book._id === id) {
-    //         return res.data;
-    //       }
-    //       return book;
-    //     })
-    //   );
-    // });
-    const updatedBook = {
-      _id,
-      name: newName,
-      author: newAuthor,
-      rate: newRate,
-    };
-    console.log(updatedBook);
+  const handleConfirmUpdateBook = async () => {
+    setEdit(false);
+    try {
+      // Make a PUT request to update the book
+      const response = await axios.put(`${_api}/books/${editedBookId}`, {
+        name,
+        author,
+        rate,
+      });
+
+      // Check if the request was successful
+      if (response.status === 200) {
+        console.log("Book updated successfully:", response.data);
+        // Close the popup
+        setEdit(false);
+      } else {
+        console.error("Failed to update book:", response.statusText);
+      }
+    } catch (error: any) {
+      console.error("Error updating book:", error.message);
+    }
+  };
+
+  // Cancel update book
+  const handleCancelUpdateBook = () => {
     setEdit(false);
   };
 
+  // close the popup when click outside
+  useEffect(() => {
+    const closePopup = (e) => {
+      if (e.target.classList.contains("bg-black/15")) {
+        setEdit(false);
+      }
+    };
+    window.addEventListener("click", closePopup);
+    return () => window.removeEventListener("click", closePopup);
+  }, [setEdit]);
+
   return (
     <>
-      {updateBook ? (
+      {edit ? (
         <div>
-          <div className="fixed top-0 left-0 z-50 w-full h-full bg-black/50"></div>
+          <div className="fixed top-0 left-0 z-50 w-full h-full bg-black/15"></div>
           <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white z-50 p-[20px] rounded-md">
             <h1 className="text-2xl font-bold mb-[20px]">Edit Book</h1>
-            <form
-              onSubmit={handleUpdateBook}
-              className="grid grid-cols-12 gap-[10px]"
-            >
+
+            <div className="grid grid-cols-12 gap-[10px]">
               <input
                 className="col-span-4 border border-gray-300 rounded-md py-[5px] px-[5px] outline-none"
                 type="text"
-                value={newName}
+                value={name}
                 placeholder="name"
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
               />
               <input
                 className="col-span-4 border border-gray-300 rounded-md py-[5px] px-[5px] outline-none"
                 type="text"
-                value={newAuthor}
+                value={author}
                 placeholder="author"
-                onChange={(e) => setNewAuthor(e.target.value)}
+                onChange={(e) => setAuthor(e.target.value)}
               />
               <input
                 className="col-span-2 border border-gray-300 rounded-md py-[5px] px-[5px] outline-none"
                 type="number"
-                value={newRate}
+                value={rate}
                 placeholder="rate"
-                onChange={(e) => setNewRate(Number(e.target.value))}
+                onChange={(e) => setRate(e.target.value)}
               />
+            </div>
+
+            <div className="flex text-white justify-end gap-[10px] mt-[30px]">
               <button
-                className="col-span-2 bg-gray-200 transition-all duration-300 hover:bg-gray-300 border border-gray-300 rounded-md py-[5px] px-[5px] outline-none"
-                type="submit"
+                className="col-span-2 bg-red-400 transition-all duration-300 hover:bg-red-300 rounded-md py-[6px] px-[10px] outline-none"
+                onClick={handleCancelUpdateBook}
               >
-                Send
+                Cancel
               </button>
-            </form>
+              <button
+                className="col-span-2 bg-green-400 transition-all duration-300 hover:bg-green-300 brder rounded-md py-[6px] px-[10px] outline-none"
+                onClick={handleConfirmUpdateBook}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
